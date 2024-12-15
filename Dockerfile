@@ -35,7 +35,7 @@ RUN git clone https://mpr.makedeb.org/just \
 # Install pgai for alternate vector scheduling ## Not sure if I'll need it or not but here it is
 RUN git clone https://github.com/timescale/pgai.git --branch extension-0.6.0 \
     && cd pgai \
-    && just ext install
+    && just ext install \
     && psql -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@:${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" \
     && CREATE EXTENSION IF NOT EXISTS ai CASCADE; ### supposedly also installs PGVector?
     

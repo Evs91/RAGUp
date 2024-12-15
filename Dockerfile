@@ -5,6 +5,7 @@ ENV POSTGRES_DB=ragdb
 ENV POSTGRES_USER=raguser
 ENV POSTGRES_PASSWORD=ragpassword
 ENV POSTGRES_HOST=localhost
+ENV POSTGRES_PORT=5432
 
 # Install necessary build dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,13 +19,6 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-
-RUN git clone https://mpr.makedeb.org/just \
-    && cd just \
-    && makedeb -si
-    ## alternate: projects/extension/build.py install
-    && psql -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@:${POSTGRES_HOST}/<POSTGRES_DB>"
-    
 # Install pgvector for vector storage and operations
 RUN git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git \
     && cd pgvector \
@@ -33,11 +27,18 @@ RUN git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git \
     && cd .. \
     && rm -rf pgvector
 
+RUN git clone https://mpr.makedeb.org/just \
+    && cd just \
+    && makedeb -si \
+    ## alternate: projects/extension/build.py install 
+
 # Install pgai for alternate vector scheduling ## Not sure if I'll need it or not but here it is
 RUN git clone https://github.com/timescale/pgai.git --branch extension-0.6.0 \
     && cd pgai \
     && just ext install
-
+    && psql -d "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@:${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}" \
+    && CREATE EXTENSION IF NOT EXISTS ai CASCADE; ### supposedly also installs PGVector?
+    
 # Install pg_cron for background job scheduling
 RUN git clone https://github.com/citusdata/pg_cron.git \
     && cd pg_cron \
